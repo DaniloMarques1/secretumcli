@@ -31,24 +31,8 @@ func main() {
 
 	masterClient := pb.NewMasterClient(conn)
 	passwordClient := pb.NewPasswordClient(conn)
-
-	auth := cli.NewAuth(masterClient)
-	if arg == cli.ACCESS {
-		token, err := auth.SignIn()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		shell := cli.NewCli(passwordClient, masterClient, token)
-		shell.Shell()
-	} else if arg == cli.REGISTER {
-		if err := auth.SignUp(); err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		log.Fatalf("Invalid command\n")
-	}
-
+	c := cli.NewCli(passwordClient, masterClient)
+	c.Shell(arg)
 }
 
 func parseArguments() (string, error) {

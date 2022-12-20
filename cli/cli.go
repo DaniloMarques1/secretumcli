@@ -2,7 +2,6 @@ package cli
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 
@@ -13,42 +12,35 @@ type Cli struct {
 	passwordClient pb.PasswordClient
 	masterClient   pb.MasterClient
 	scanner        *bufio.Scanner
-	token          string
 }
 
-func NewCli(passwordClient pb.PasswordClient, masterClient pb.MasterClient, token string) *Cli {
+func NewCli(passwordClient pb.PasswordClient, masterClient pb.MasterClient) *Cli {
 	scanner := bufio.NewScanner(os.Stdin)
 	return &Cli{
 		passwordClient: passwordClient,
 		masterClient:   masterClient,
 		scanner:        scanner,
-		token:          token,
 	}
 }
 
-func (c *Cli) Shell() {
-	for {
-		fmt.Print(">> ")
-		var cmd string
-		if c.scanner.Scan() {
-			cmd = c.scanner.Text()
+func (c *Cli) Shell(arg string) {
+	auth := NewAuth(c.masterClient)
+
+	switch arg {
+	case ACCESS:
+		token, err := auth.SignIn()
+		if err != nil {
+			log.Printf("ERR: %v\n", err)
+			break
 		}
 
-		switch cmd {
-		case ACCESS:
-			auth := NewAuth(c.masterClient)
-			token, err := auth.SignIn()
-			if err != nil {
-				log.Printf("ERR: %v\n", err)
-				continue
-			}
-
-			c.token = token
-		case EXIT:
-			os.Exit(1)
-		default:
-			fmt.Println("Command not found")
+		shell := NewShell(c.passwordClient, token)
+		shell.Run()
+	case REGISTER:
+		if err := auth.SignUp(); err != nil {
+			log.Fatal(err)
 		}
-
+	default:
+		log.Fatalf("Invalid command\n")
 	}
 }
