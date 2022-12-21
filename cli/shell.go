@@ -2,8 +2,11 @@ package cli
 
 import (
 	"bufio"
+	"context"
+	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/danilomarques/secretumcli/pb"
 )
@@ -26,11 +29,107 @@ func NewShell(passwordClient pb.PasswordClient, token string) *Shell {
 func (s *Shell) Run() {
 	for {
 		fmt.Print(">> ")
-		var cmd string
+		var input string
 		if s.scanner.Scan() {
-			cmd = s.scanner.Text()
+			input = s.scanner.Text()
 		}
+		cmd, args, err := s.parseInput(input)
+		if err != nil {
+			continue
+		}
+
 		switch cmd {
+		case SAVE:
+			if len(args) != 2 {
+				fmt.Println("You need to provide a key and a password")
+				continue
+			}
+			key := args[0]
+			password := args[1]
+			request := &pb.CreatePasswordRequest{
+				AccessToken: s.token,
+				Key:         key,
+				Password:    password,
+			}
+			response, err := s.passwordClient.SavePassword(context.Background(), request)
+			if err != nil || !response.OK {
+				fmt.Println("Something went wrong. Please try again")
+				continue
+			}
+
+			fmt.Println("Password saved successfully")
+		case FIND:
+			if len(args) != 1 {
+				fmt.Println("You need to provide the key you want to look for")
+				continue
+			}
+			key := args[0]
+			request := &pb.FindPasswordRequest{
+				AccessToken: s.token,
+				Key:         key,
+			}
+			response, err := s.passwordClient.FindPassword(context.Background(), request)
+			if err != nil {
+				fmt.Println("Something went wrong. Please try again")
+				continue
+			}
+
+			fmt.Println(response.Password)
+		case REMOVE:
+			if len(args) != 1 {
+				fmt.Println("You need to provide the key you want to remove")
+				continue
+			}
+			key := args[0]
+			request := &pb.RemovePasswordRequest{
+				AccessToken: s.token,
+				Key:         key,
+			}
+			response, err := s.passwordClient.RemovePassword(context.Background(), request)
+			if err != nil || !response.OK {
+				fmt.Println("Something went wrong. Please try again")
+				continue
+			}
+
+			fmt.Println("Password removed successfully")
+		case GENERATE:
+			if len(args) != 2 {
+				fmt.Println("You need to a provide the key and a keyphrase that will be used to generate the random password")
+				continue
+			}
+			key := args[0]
+			keyphrase := args[1]
+			request := &pb.GeneratePasswordRequest{
+				AccessToken: s.token,
+				Key:         key,
+				Keyphrase:   keyphrase,
+			}
+			_, err := s.passwordClient.GeneratePassword(context.Background(), request)
+
+			if err != nil {
+				fmt.Println("Something went wrong. Please try again")
+				continue
+			}
+
+			fmt.Println("Password generated successfully")
+		case EXIT:
+			os.Exit(1)
+		default:
+			fmt.Println("Command not found")
 		}
 	}
+}
+
+func (s *Shell) parseInput(input string) (string, []string, error) {
+	slice := strings.Split(input, " ")
+	if len(slice) == 0 {
+		return "", nil, errors.New("Wrong input provided")
+	}
+	cmd := slice[0]
+	var args []string
+	if len(slice) > 1 {
+		args = slice[1:]
+	}
+
+	return cmd, args, nil
 }
