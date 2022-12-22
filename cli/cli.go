@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 
@@ -40,7 +41,14 @@ func (c *Cli) Run(arg string) {
 		if err := auth.SignUp(); err != nil {
 			log.Fatal(err)
 		}
+	case HELP:
+		c.Usage()
 	default:
-		log.Fatalf("Invalid command\n")
+		log.Fatalf("Invalid command use the help command to check the usage\n")
 	}
+}
+
+func (c *Cli) Usage() {
+	fmt.Println("access     - will request your e-mail and password")
+	fmt.Println("register   - you will create a new master")
 }

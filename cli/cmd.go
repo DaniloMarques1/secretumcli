@@ -11,4 +11,5 @@ const (
 	GENERATE = "generate"
 	KEYS     = "keys"
 	EXIT     = "exit"
+	HELP     = "help"
 )

@@ -134,6 +134,8 @@ func (s *Shell) Run() {
 			}
 		case EXIT:
 			os.Exit(1)
+		case HELP:
+			s.Usage()
 		default:
 			fmt.Println("Command not found")
 		}
@@ -152,4 +154,14 @@ func (s *Shell) parseInput(input string) (string, []string, error) {
 	}
 
 	return cmd, args, nil
+}
+
+func (s *Shell) Usage() {
+	fmt.Println("save      - save a new password example: save passwordkey password")
+	fmt.Println("remove    - removes a password example: remove passwordkey")
+	fmt.Println("keys      - list all the keys of saved passwords example: keys")
+	fmt.Println("update    - update a password example: update passwordkey newpassword")
+	fmt.Println("find      - finds the password associated with the given key example: find passwordkey")
+	fmt.Println("generate  - will generate a random password example: generate passwordkey passwordkeyphrase")
+	fmt.Println("exit      - finish the program")
 }

@@ -38,7 +38,7 @@ func main() {
 func parseArguments() (string, error) {
 	args := os.Args
 	if len(args) != 2 {
-		return "", errors.New("Invalid number of arguments")
+		return "", errors.New("Invalid number of arguments. Use the \"help\" command to see the usage")
 	}
 
 	return args[1], nil
