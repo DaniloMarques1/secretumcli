@@ -23,7 +23,7 @@ func NewCli(passwordClient pb.PasswordClient, masterClient pb.MasterClient) *Cli
 	}
 }
 
-func (c *Cli) Shell(arg string) {
+func (c *Cli) Run(arg string) {
 	auth := NewAuth(c.masterClient)
 
 	switch arg {

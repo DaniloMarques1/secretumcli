@@ -112,6 +112,26 @@ func (s *Shell) Run() {
 			}
 
 			fmt.Println("Password generated successfully")
+		case KEYS:
+			if len(args) != 0 {
+				fmt.Println("Invalid number of arguments")
+				continue
+			}
+			request := &pb.FindKeysRequest{AccessToken: s.token}
+			response, err := s.passwordClient.FindKeys(context.Background(), request)
+			if err != nil {
+				fmt.Println("Something went wrong. Please try again")
+				continue
+			}
+
+			if len(response.GetKeys()) == 0 {
+				fmt.Println("You have not saved any passwords yet")
+				continue
+			}
+
+			for _, key := range response.GetKeys() {
+				fmt.Printf("- %v\n", key)
+			}
 		case EXIT:
 			os.Exit(1)
 		default:

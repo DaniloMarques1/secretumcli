@@ -32,7 +32,7 @@ func main() {
 	masterClient := pb.NewMasterClient(conn)
 	passwordClient := pb.NewPasswordClient(conn)
 	c := cli.NewCli(passwordClient, masterClient)
-	c.Shell(arg)
+	c.Run(arg)
 }
 
 func parseArguments() (string, error) {
