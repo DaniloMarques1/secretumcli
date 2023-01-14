@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -13,27 +14,31 @@ import (
 
 type Shell struct {
 	passwordClient pb.PasswordClient
-	scanner        *bufio.Scanner
+	reader         *bufio.Reader
 	token          string
 }
 
 func NewShell(passwordClient pb.PasswordClient, token string) *Shell {
-	scanner := bufio.NewScanner(os.Stdin)
+	reader := bufio.NewReader(os.Stdin)
 	return &Shell{
 		passwordClient: passwordClient,
-		scanner:        scanner,
+		reader:         reader,
 		token:          token,
 	}
 }
 
 // stats a shell where the user can run commands
 func (s *Shell) Run() {
-	var input string
-	// TODO: we have a problem when we press ctrl-d on the shell
+	//var input string
 	for {
 		fmt.Print(">> ")
-		if s.scanner.Scan() {
-			input = s.scanner.Text()
+		input, err := s.reader.ReadString('\n')
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				fmt.Println()
+				os.Exit(1)
+			}
+			continue
 		}
 		cmd, args, err := s.parseInput(input)
 		if err != nil {
@@ -146,6 +151,7 @@ func (s *Shell) Run() {
 
 // parse the user input returning the commands and its arguments
 func (s *Shell) parseInput(input string) (string, []string, error) {
+	input = strings.ReplaceAll(input, "\n", "")
 	slice := strings.Split(input, " ")
 	if len(slice) == 0 {
 		return "", nil, errors.New("Wrong input provided")
