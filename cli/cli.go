@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/danilomarques/secretumcli/pb"
+	"google.golang.org/grpc"
 )
 
 type Cli struct {
@@ -15,7 +16,10 @@ type Cli struct {
 	scanner        *bufio.Scanner
 }
 
-func NewCli(passwordClient pb.PasswordClient, masterClient pb.MasterClient) *Cli {
+func NewCli(conn grpc.ClientConnInterface) *Cli {
+	masterClient := pb.NewMasterClient(conn)
+	passwordClient := pb.NewPasswordClient(conn)
+
 	scanner := bufio.NewScanner(os.Stdin)
 	return &Cli{
 		passwordClient: passwordClient,

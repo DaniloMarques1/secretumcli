@@ -3,7 +3,6 @@ module github.com/danilomarques/secretumcli
 go 1.19
 
 require (
-	github.com/joho/godotenv v1.4.0
 	golang.org/x/crypto v0.4.0
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1

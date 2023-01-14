@@ -26,10 +26,12 @@ func NewShell(passwordClient pb.PasswordClient, token string) *Shell {
 	}
 }
 
+// stats a shell where the user can run commands
 func (s *Shell) Run() {
+	var input string
+	// TODO: we have a problem when we press ctrl-d on the shell
 	for {
 		fmt.Print(">> ")
-		var input string
 		if s.scanner.Scan() {
 			input = s.scanner.Text()
 		}
@@ -142,6 +144,7 @@ func (s *Shell) Run() {
 	}
 }
 
+// parse the user input returning the commands and its arguments
 func (s *Shell) parseInput(input string) (string, []string, error) {
 	slice := strings.Split(input, " ")
 	if len(slice) == 0 {
@@ -156,6 +159,7 @@ func (s *Shell) parseInput(input string) (string, []string, error) {
 	return cmd, args, nil
 }
 
+// shows availables shell commands
 func (s *Shell) Usage() {
 	fmt.Println("save      - save a new password example: save passwordkey password")
 	fmt.Println("remove    - removes a password example: remove passwordkey")

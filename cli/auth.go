@@ -25,6 +25,8 @@ func NewAuth(client pb.MasterClient) *Auth {
 	return &Auth{client: client, scanner: scanner}
 }
 
+// request user information and try register
+// the user on the server
 func (a *Auth) SignUp() error {
 	fmt.Print("Please provide an email address: ")
 	var email string
@@ -61,6 +63,7 @@ func (a *Auth) SignUp() error {
 	return nil
 }
 
+// request user information and try to sign in
 func (a *Auth) SignIn() (string, error) {
 	fmt.Print("Please provide an email address: ")
 	var email string
