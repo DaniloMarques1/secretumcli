@@ -5,9 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/danilomarques/secretumcli/pb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var (
@@ -82,8 +85,47 @@ func (a *Auth) SignIn() (string, error) {
 	)
 
 	if err != nil {
-		return "", err
+		errStatus, ok := status.FromError(err)
+		if ok && errStatus.Code() == codes.PermissionDenied {
+			if err := a.handlePasswordExpired(email, password); err != nil {
+				return "", err
+			}
+
+			log.Printf("Your password was updated. Please try sign in again\n")
+			os.Exit(1)
+		} else {
+			return "", err
+		}
 	}
 
 	return response.AccessToken, nil
+}
+
+// it will ask for a new password if the current got expired
+func (a *Auth) handlePasswordExpired(email, oldPassword string) error {
+	newPassword, err := ReadPassword("Please provide a new password: ")
+	if err != nil {
+		return err
+	}
+
+	if newPassword == oldPassword {
+		return errors.New("The new password should be different than your current one")
+	}
+
+	req := &pb.UpdateMasterRequest{
+		Email:       email,
+		OldPassword: oldPassword,
+		NewPassword: newPassword,
+	}
+
+	_, err = a.client.UpdateMaster(
+		context.Background(),
+		req,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

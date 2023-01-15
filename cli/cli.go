@@ -8,6 +8,7 @@ import (
 
 	"github.com/danilomarques/secretumcli/pb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 type Cli struct {
@@ -35,15 +36,24 @@ func (c *Cli) Run(arg string) {
 	case ACCESS:
 		token, err := auth.SignIn()
 		if err != nil {
-			log.Printf("ERR: %v\n", err)
-			break
+			errStatus, ok := status.FromError(err)
+			if ok {
+				log.Fatal(errStatus.Message())
+			} else {
+				log.Fatalf("ERR: %v\n", err)
+			}
 		}
 
 		shell := NewShell(c.passwordClient, token)
 		shell.Run()
 	case REGISTER:
 		if err := auth.SignUp(); err != nil {
-			log.Fatal(err)
+			errStatus, ok := status.FromError(err)
+			if ok {
+				log.Fatal(errStatus.Message())
+			} else {
+				log.Fatal(err)
+			}
 		}
 	case HELP:
 		c.Usage()
