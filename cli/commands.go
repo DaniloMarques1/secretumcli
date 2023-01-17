@@ -12,4 +12,5 @@ const (
 	KEYS     = "keys"
 	EXIT     = "exit"
 	HELP     = "help"
+	CLEAR    = "clear"
 )

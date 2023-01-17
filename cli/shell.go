@@ -6,7 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/danilomarques/secretumcli/pb"
@@ -143,6 +146,21 @@ func (s *Shell) Run() {
 			os.Exit(1)
 		case HELP:
 			s.Usage()
+		case CLEAR:
+			operatingSystem := runtime.GOOS
+			switch operatingSystem {
+			case "windows":
+				exec.Command("cls").Run()
+			default:
+				// LINUX or MAC
+				cmd := exec.Command("clear")
+				out, err := cmd.Output()
+				if err != nil {
+					log.Fatal(err)
+				}
+				fmt.Println(string(out))
+			}
+
 		default:
 			fmt.Println("Command not found")
 		}
@@ -173,5 +191,6 @@ func (s *Shell) Usage() {
 	fmt.Println("update    - update a password example: update passwordkey newpassword")
 	fmt.Println("find      - finds the password associated with the given key example: find passwordkey")
 	fmt.Println("generate  - will generate a random password example: generate passwordkey passwordkeyphrase")
+	fmt.Println("clear     - clears the shell")
 	fmt.Println("exit      - finish the program")
 }
